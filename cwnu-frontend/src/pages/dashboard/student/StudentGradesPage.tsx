@@ -1,0 +1,14 @@
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Badge } from '../../../components/ui/Badge';
+import { Card } from '../../../components/ui/Card';
+import { api } from '../../../services/api';
+import { useAuth } from '../../../context/AuthContext';
+
+export function StudentGradesPage() {
+  const { user } = useAuth();
+  const { data, isLoading, isError } = useQuery({ queryKey: ['student-grades', user?.id], queryFn: () => api.getEnrollments({ studentId: user?.id, limit: 100 }), enabled: Boolean(user) });
+  const grades = (data?.data || []).filter((item: any) => item.gradePoints != null);
+  const average = grades.length ? (grades.reduce((sum: number, item: any) => sum + Number(item.gradePoints), 0) / grades.length).toFixed(2) : '—';
+  return <div className="space-y-6 animate-fade-in"><section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-academic-navy via-[#122b54] to-[#1d477d] p-6 text-white shadow-elevated sm:p-8"><Link to="/dashboard/student" className="mb-5 inline-flex text-sm font-semibold text-blue-100 hover:text-white hover:underline">← Back to dashboard</Link><p className="text-xs font-semibold uppercase tracking-[0.2em] text-academic-gold">Academic progress</p><h1 className="mt-2 text-3xl font-bold sm:text-4xl">Grades</h1><p className="mt-3 text-sm text-blue-100">Review your recorded course results and academic standing.</p></section><div className="grid gap-4 sm:grid-cols-3"><Card className="p-5"><p className="text-xs uppercase tracking-wide text-gray-500">Current average</p><p className="mt-2 text-3xl font-bold">{average}</p></Card><Card className="p-5"><p className="text-xs uppercase tracking-wide text-gray-500">Graded courses</p><p className="mt-2 text-3xl font-bold">{grades.length}</p></Card><Card className="p-5"><p className="text-xs uppercase tracking-wide text-gray-500">Academic status</p><p className="mt-2"><Badge variant={grades.length ? 'success' : 'gray'}>{grades.length ? 'In progress' : 'Awaiting grades'}</Badge></p></Card></div><Card padding="none" className="overflow-hidden"><div className="border-b border-gray-100 p-5 dark:border-gray-800"><h2 className="text-xl font-bold">Course results</h2></div>{isLoading ? <p className="p-6 text-gray-500">Loading grades...</p> : isError ? <p className="p-6 text-red-600">Unable to load grades.</p> : grades.length ? <div className="divide-y divide-gray-100 dark:divide-gray-800">{grades.map((item: any) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-5"><div><p className="font-semibold">{item.course?.name || item.course?.code || 'Course'}</p><p className="mt-1 text-sm text-gray-500">{item.course?.code || 'Recorded enrollment'}</p></div><p className="text-xl font-bold text-primary-600">{Number(item.gradePoints).toFixed(2)}</p></div>)}</div> : <div className="p-10 text-center text-gray-500">No grades have been recorded yet.</div>}</Card></div>;
+}

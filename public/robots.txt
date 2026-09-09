@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /data/
+Disallow: /form-handler.php
+Disallow: /comments-handler.php
+Disallow: /includes/
+Disallow: /config/
+
+Sitemap: /sitemap.xml
